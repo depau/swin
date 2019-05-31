@@ -50,6 +50,8 @@
 ; Super+Shift+Q closes the active window, then it activates the window beneath it
 +#q::closeWindow()
 
++#e::poweroff()
+
 ; Lock the screen, matches the keybinding I use on Sway
 #=::Send, #{l}
 

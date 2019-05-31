@@ -69,6 +69,11 @@ openWox() {
     Send, ^{Backspace}
 }
 
+poweroff() {
+    WinActivate, ahk_class Shell_TrayWnd
+    Send, !{F4}
+}
+
 ;
 ; This function examines the registry to build an accurate list of the current virtual desktops and which one we're currently on.
 ; Current desktop UUID appears to be in HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\SessionInfo\1\VirtualDesktops
