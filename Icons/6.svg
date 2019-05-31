@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="255.99998"
+   height="255.99998"
+   viewBox="0 0 67.733328 67.733331"
+   version="1.1"
+   id="svg8"
+   inkscape:version="0.92.4 (5da689c313, 2019-01-14)"
+   sodipodi:docname="6.svg">
+  <defs
+     id="defs2" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.90509668"
+     inkscape:cx="-29.333208"
+     inkscape:cy="-146.0068"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     units="px"
+     inkscape:pagecheckerboard="true"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0"
+     inkscape:window-width="1920"
+     inkscape:window-height="1000"
+     inkscape:window-x="-11"
+     inkscape:window-y="-11"
+     inkscape:window-maximized="1" />
+  <metadata
+     id="metadata5">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-56.953671,-104.27436)">
+    <path
+       style="fill:#ffffff;stroke-width:0.15357637"
+       d="M 56.953671,104.27436 H 124.687 v 67.73333 H 56.953671 Z"
+       id="rect10" />
+    <g
+       aria-label="6"
+       transform="matrix(1.3402012,0,0,1.3402012,7.8770633,48.335895)"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none"
+       id="flowRoot12">
+      <path
+         d="m 70.785156,72.116114 q 0,2.050782 -0.664062,3.769532 -0.664063,1.71875 -1.835938,2.96875 -1.171875,1.25 -2.792969,1.953125 -1.621093,0.683593 -3.515625,0.683593 -2.109375,0 -3.789062,-0.878906 -1.660156,-0.878906 -2.832031,-2.519531 -1.152344,-1.660156 -1.757813,-4.042969 -0.605469,-2.382812 -0.605469,-5.371094 0,-3.652343 0.800782,-6.621093 0.820312,-2.988282 2.304687,-5.097657 1.503906,-2.128906 3.613281,-3.28125 2.109375,-1.152343 4.707032,-1.152343 2.890625,0 4.648437,0.800781 v 3.027344 q -2.167969,-1.113282 -4.570312,-1.113282 -1.875,0 -3.378907,0.839844 -1.503906,0.839844 -2.578125,2.382813 -1.074218,1.523437 -1.660156,3.691406 -0.566406,2.167969 -0.566406,4.824219 h 0.07813 q 1.933594,-3.496094 6.386719,-3.496094 1.835937,0 3.300781,0.625 1.484375,0.625 2.519531,1.777344 1.054688,1.132812 1.621094,2.714843 0.566406,1.582032 0.566406,3.515625 z m -3.28125,0.410157 q 0,-1.464844 -0.371094,-2.636719 -0.371093,-1.171875 -1.074218,-1.992188 -0.683594,-0.820312 -1.699219,-1.25 -1.015625,-0.449218 -2.304688,-0.449218 -1.191406,0 -2.207031,0.449218 -1.015625,0.449219 -1.757812,1.230469 -0.742188,0.761719 -1.171875,1.796875 -0.410157,1.015625 -0.410157,2.167969 0,1.445312 0.410157,2.714844 0.410156,1.25 1.152343,2.1875 0.742188,0.9375 1.757813,1.484375 1.035156,0.527343 2.285156,0.527343 1.210938,0 2.207031,-0.449218 0.996094,-0.46875 1.699219,-1.289063 0.703125,-0.820312 1.09375,-1.953125 0.390625,-1.152344 0.390625,-2.539062 z"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Segoe UI';-inkscape-font-specification:'Segoe UI'"
+         id="path51" />
+    </g>
+    <g
+       transform="matrix(1.3402012,0,0,1.3402012,8.6230738,48.335895)"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none"
+       id="flowRoot26" />
+  </g>
+</svg>

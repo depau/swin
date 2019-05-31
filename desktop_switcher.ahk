@@ -10,17 +10,64 @@ CurrentDesktop := 1      ; Desktop count is 1-indexed (Microsoft numbers them th
 LastOpenedDesktop := 1
 
 ; DLL
-hVirtualDesktopAccessor := DllCall("LoadLibrary", "Str", A_ScriptDir . "\virtual-desktop-accessor.dll", "Ptr")
+hVirtualDesktopAccessor := DllCall("LoadLibrary", "Str", A_ScriptDir . "\VirtualDesktopAccessor.dll", "Ptr")
 global IsWindowOnDesktopNumberProc := DllCall("GetProcAddress", Ptr, hVirtualDesktopAccessor, AStr, "IsWindowOnDesktopNumber", "Ptr")
 global MoveWindowToDesktopNumberProc := DllCall("GetProcAddress", Ptr, hVirtualDesktopAccessor, AStr, "MoveWindowToDesktopNumber", "Ptr")
+global RestartVirtualDesktopAccessorProc := DllCall("GetProcAddress", Ptr, hVirtualDesktopAccessor, AStr, "RestartVirtualDesktopAccessor", "Ptr")
+global RegisterPostMessageHookProc := DllCall("GetProcAddress", Ptr, hVirtualDesktopAccessor, AStr, "RegisterPostMessageHook", "Ptr")
+global UnregisterPostMessageHookProc := DllCall("GetProcAddress", Ptr, hVirtualDesktopAccessor, AStr, "UnregisterPostMessageHook", "Ptr")
+global IsPinnedWindowProc := DllCall("GetProcAddress", Ptr, hVirtualDesktopAccessor, AStr, "IsPinnedWindow", "Ptr")
+global IsWindowOnCurrentVirtualDesktopProc := DllCall("GetProcAddress", Ptr, hVirtualDesktopAccessor, AStr, "IsWindowOnCurrentVirtualDesktop", "Ptr")
+global GetCurrentDesktopNumberProc := DllCall("GetProcAddress", Ptr, hVirtualDesktopAccessor, AStr, "GetCurrentDesktopNumberProc", "Ptr")
 
 ; Main
 SetKeyDelay, 75
 mapDesktopsFromRegistry()
 OutputDebug, [loading] desktops: %DesktopCount% current: %CurrentDesktop%
 
+InitMenuIcon()
+
+; Restart the virtual desktop accessor when Explorer.exe crashes, or restarts (e.g. when coming from fullscreen game)
+explorerRestartMsg := DllCall("user32\RegisterWindowMessage", "Str", "TaskbarCreated")
+OnMessage(explorerRestartMsg, "OnExplorerRestart")
+OnExplorerRestart(wParam, lParam, msg, hwnd) {
+    global RestartVirtualDesktopAccessorProc
+    DllCall(RestartVirtualDesktopAccessorProc, UInt, result)
+}
+
+; Initialize virtual desktop event listener
+;DllCall(RegisterPostMessageHookProc, Int, hwnd, Int, 0x1400 + 42)
+;OnMessage(0x1400 + 42, "WindowManagerEventListener")
+
 #Include %A_ScriptDir%\user_config.ahk
+#Include %A_ScriptDir%\windrag.ahk
+
 return
+
+toggleMaximize(){
+    WinGet, maximized, MinMax, A
+
+    if maximized {
+        WinRestore A
+    } else {
+        WinMaximize A
+    }
+}
+
+closeWindow(){
+    global CurrentDesktop
+
+    WinClose, A
+    focusTheForemostWindow(CurrentDesktop)
+}
+
+openWox() {
+    ; I set Alt+Shift+Win+Delete (very unlikely to press by mistake) so I can manage Wox with AHK
+    Send, !+#{Delete}
+    WinWait, ahk_exe Wox.exe
+    WinActivate, ahk_exe Wox.exe
+    Send, ^{Backspace}
+}
 
 ;
 ; This function examines the registry to build an accurate list of the current virtual desktops and which one we're currently on.
@@ -57,7 +104,7 @@ mapDesktopsFromRegistry()
     while (CurrentDesktopId and i < DesktopCount) {
         StartPos := (i * IdLength) + 1
         DesktopIter := SubStr(DesktopList, StartPos, IdLength)
-        OutputDebug, The iterator is pointing at %DesktopIter% and count is %i%.
+        ;OutputDebug, The iterator is pointing at %DesktopIter% and count is %i%.
 
         ; Break out if we find a match in the list. If we didn't find anything, keep the
         ; old guess and pray we're still correct :-D.
@@ -91,16 +138,59 @@ getSessionId()
     return SessionId
 }
 
+_createEnoughDesktops(targetDesktop) {
+    global DesktopCount
+
+    ; Create virtual desktop if it does not exist
+    while (targetDesktop > DesktopCount) {
+        createVirtualDesktop()
+    }
+    return
+}
+
+nextDesktop() {
+    global CurrentDesktop, DesktopCount, switchDesktopByNumber
+    
+    if (CurrentDesktop + 1 > DesktopCount) {
+        switchDesktopByNumber(1)
+    } else {
+        switchDesktopByNumber(CurrentDesktop + 1)
+    }
+    return
+}
+
+previousDesktop() {
+    global CurrentDesktop, DesktopCount, switchDesktopByNumber
+    
+    if (CurrentDesktop - 1 < 1) {
+        switchDesktopByNumber(DesktopCount)
+    } else {
+        switchDesktopByNumber(CurrentDesktop - 1)
+    }
+    return
+}
+
 _switchDesktopToTarget(targetDesktop)
 {
     ; Globals variables should have been updated via updateGlobalVariables() prior to entering this function
     global CurrentDesktop, DesktopCount, LastOpenedDesktop
 
     ; Don't attempt to switch to an invalid desktop
-    if (targetDesktop > DesktopCount || targetDesktop < 1 || targetDesktop == CurrentDesktop) {
+    if (targetDesktop < 1) {
         OutputDebug, [invalid] target: %targetDesktop% current: %CurrentDesktop%
         return
     }
+
+    ; There are only 1-10 icons
+    if (targetDesktop <= 10) {
+        SetMenuIcon(targetDesktop)
+    }
+
+    if (targetDesktop == CurrentDesktop) {
+        return
+    }
+
+    _createEnoughDesktops(targetDesktop)
 
     LastOpenedDesktop := CurrentDesktop
 
@@ -126,7 +216,7 @@ _switchDesktopToTarget(targetDesktop)
     focusTheForemostWindow(targetDesktop)
 }
 
-updateGlobalVariables() 
+updateGlobalVariables()
 {
     ; Re-generate the list of desktops and where we fit in that. We do this because
     ; the user may have switched desktops via some other means than the script.
@@ -185,8 +275,21 @@ getForemostWindowIdOnDesktop(n)
 
 MoveCurrentWindowToDesktop(desktopNumber) {
     WinGet, activeHwnd, ID, A
-    DllCall(MoveWindowToDesktopNumberProc, UInt, activeHwnd, UInt, desktopNumber - 1)
+    
+    _createEnoughDesktops(desktopNumber)
+
+    OutputDebug, Moving current window %activeHwnd% to %desktopNumber%
+
+    output := DllCall(MoveWindowToDesktopNumberProc, UInt, activeHwnd, UInt, desktopNumber - 1)
+
+    if output {
+        OutputDebug, success
+    } else {
+        OutputDebug, failed
+    }
+
     switchDesktopByNumber(desktopNumber)
+    WinActivate, ahk_id activeHwnd
 }
 
 ;
@@ -214,4 +317,61 @@ deleteVirtualDesktop()
     DesktopCount--
     CurrentDesktop--
     OutputDebug, [delete] desktops: %DesktopCount% current: %CurrentDesktop%
+    InitMenuIcon()
+}
+
+InitMenuIcon() {
+    global CurrentDesktop, GetCurrentDesktopNumberProc
+    CurrentDesktop := DllCall(GetCurrentDesktopNumberProc, "UInt") + 1
+    OutputDebug, Initializing menu icon, desktop: %CurrentDesktop%
+    
+    if (CurrentDesktop == "") {
+        CurrentDesktop := 1
+    }
+
+    SetMenuIcon(CurrentDesktop)
+    return
+}
+
+SetMenuIcon(desktopNumber) {
+    Menu, Tray, Icon, Icons/%desktopNumber%.ico
+    Menu, Tray, Tip, Current workspace: %desktopNumber%
+    return
+}
+
+; Windows 10 desktop changes listener
+WindowManagerEventListener(wParam, lParam, msg, hwnd) {
+    global IsWindowOnCurrentVirtualDesktopProc, IsPinnedWindowProc, activeWindowByDesktop, CurrentDesktop
+
+    CurrentDesktop := lParam + 1
+    
+    MsgBox, ciao
+    
+    OutputDebug, Window manager event, current desktop: %CurrentDesktop%
+    
+    ; Try to restore active window from memory (if it's still on the desktop and is not pinned)
+    WinGet, activeHwnd, ID, A 
+    isPinned := DllCall(IsPinnedWindowProc, UInt, activeHwnd)
+    oldHwnd := activeWindowByDesktop[lParam]
+    isOnDesktop := DllCall(IsWindowOnCurrentVirtualDesktopProc, UInt, oldHwnd, UInt)
+
+    if (isOnDesktop == 1 && isPinned != 1) {
+        WinActivate, ahk_id %oldHwnd%
+    }
+
+    SetMenuIcon(CurrentDesktop)
+    
+    ; When switching to desktop 1, set background pluto.jpg
+    ; if (lParam == 0) {
+        ; DllCall("SystemParametersInfo", UInt, 0x14, UInt, 0, Str, "C:\Users\Jarppa\Pictures\Backgrounds\saturn.jpg", UInt, 1)
+    ; When switching to desktop 2, set background DeskGmail.png
+    ; } else if (lParam == 1) {
+        ; DllCall("SystemParametersInfo", UInt, 0x14, UInt, 0, Str, "C:\Users\Jarppa\Pictures\Backgrounds\DeskGmail.png", UInt, 1)
+    ; When switching to desktop 7 or 8, set background DeskMisc.png
+    ; } else if (lParam == 2 || lParam == 3) {
+        ; DllCall("SystemParametersInfo", UInt, 0x14, UInt, 0, Str, "C:\Users\Jarppa\Pictures\Backgrounds\DeskMisc.png", UInt, 1)
+    ; Other desktops, set background to DeskWork.png
+    ; } else {
+        ; DllCall("SystemParametersInfo", UInt, 0x14, UInt, 0, Str, "C:\Users\Jarppa\Pictures\Backgrounds\DeskWork.png", UInt, 1)
+    ; }
 }
